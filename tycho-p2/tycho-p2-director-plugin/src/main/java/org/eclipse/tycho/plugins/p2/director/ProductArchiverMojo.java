@@ -80,6 +80,12 @@ public final class ProductArchiverMojo extends AbstractProductMojo {
     @Component(role = Archiver.class, hint = "tar")
     private TarArchiver tarArchiver;
 
+    /**
+     * @parameter expression="${classifierSeparatorChar}" default-value="."
+     * @required
+     */
+    private char classifierSeparatorChar;
+
     @Component
     private MavenProjectHelper helper;
 
@@ -164,7 +170,7 @@ public final class ProductArchiverMojo extends AbstractProductMojo {
                     throw new MojoExecutionException("Error packing product", e);
                 }
 
-                final String artifactClassifier = getArtifactClassifier(product, env, format);
+                final String artifactClassifier = getArtifactClassifier(product, env, format, classifierSeparatorChar);
                 helper.attachArtifact(getProject(), format, artifactClassifier, productArchive);
             }
         }
@@ -186,14 +192,14 @@ public final class ProductArchiverMojo extends AbstractProductMojo {
         }
     }
 
-    static String getArtifactClassifier(Product product, TargetEnvironment environment, String format) {
+    static String getArtifactClassifier(Product product, TargetEnvironment environment, String format, char separator) {
         // classifier (and hence artifact file name) ends with os.ws.arch (similar to Eclipse
         // download packages)
         final String artifactClassifier;
         if (product.getAttachId() == null) {
-            artifactClassifier = getOsWsArch(environment, '.');
+            artifactClassifier = getOsWsArch(environment, separator);
         } else {
-            artifactClassifier = product.getAttachId() + "-" + getOsWsArch(environment, '.');
+            artifactClassifier = product.getAttachId() + "-" + getOsWsArch(environment, separator);
         }
         return artifactClassifier;
     }
